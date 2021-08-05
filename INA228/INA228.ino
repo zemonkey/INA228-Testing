@@ -1,8 +1,3 @@
-/*********
-  Rui Santos
-  Complete project details at https://randomnerdtutorials.com  
-*********/
-
 #include <Wire.h>
 
 TwoWire INA228_Wire = TwoWire(0);
