@@ -102,6 +102,7 @@ void Check_Device() {
     }
 }
 
+//Reset configuration to default
 void reset_INA228(){
   write_16b_register(CON_Reg,Reset_Command);
   delay(10);
