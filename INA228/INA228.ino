@@ -1,6 +1,13 @@
 #include <Wire.h>
+#include <LiquidCrystal_I2C.h>
 
-TwoWire INA228_Wire = TwoWire(0);
+LiquidCrystal_I2C lcd(0x27,20,4);  
+
+unsigned long I_Time = 0;    
+const unsigned int I_Delay = 250; 
+
+int VBus_value = 0;
+float Current = 0;
 
 int reading = 0; //note that int is 32-bit or 4-bytes on ESP-32. This is Different compared to ATMEGA328 2 bytes int
 
@@ -97,7 +104,6 @@ void Check_Device() {
     }
 }
 
-//Reset configuration to default
 void reset_INA228(){
   write_16b_register(CON_Reg,Reset_Command);
   delay(10);
@@ -106,12 +112,15 @@ void reset_INA228(){
 
 
 void setup() {
-  Wire.begin();
+  Wire.begin(17,16);
   delay(1000);
   Serial.begin(115200);
   Check_Device();
   reset_INA228();
- 
+  Wire.begin(17,16);
+  lcd.init();                      // initialize the lcd 
+  // Print a message to the LCD.
+  lcd.backlight();
   write_16b_register(SOVL_Reg,SOVL_Val);
   write_16b_register(SUVL_Reg,SUVL_Val);
   write_16b_register(BOVL_Reg,BOVL_Val);
@@ -121,10 +130,14 @@ void setup() {
 }
  
 void loop() {
-  //Serial.println("Reading Result");
-  int VBus_value = read_20b_register(VBUS_Reg);
-  Serial.println(VBus_value);
-  //float Current = VBus_value*312.5/Shunt_Val/1000;
-  //Serial.println(Current);
-  delay(1000);
+  if (millis() - I_Time>= I_Delay) {
+  I_Time = millis();
+  VBus_value = read_20b_register(VBUS_Reg);
+  //in mA
+  Current = VBus_value*312.5/Shunt_Val/1000;
+  Serial.println("Arus");
+  Serial.println(Current);
+  lcd.setCursor(0,3);
+  lcd.print(Current);
+ }
 }
